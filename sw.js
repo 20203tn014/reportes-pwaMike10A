@@ -73,17 +73,46 @@ self.addEventListener("fetch", (e) => {
     // 4) Cache with network update
     // Rendimiento crítico, si el rendimiento es bajo utilizar esta estrategia
     // Desventaja: Toda nuestra aplicación está un paso atrás
-    if (e.request.url.includes('bootstrap'))
-        return e.respondWith(caches.match(e.request));
-    const source = caches.open(STATIC).then(cache => {
-        fetch(e.request).then(res => {
-            cache.put(e.request, res);
-        })
-        return cache.match(e.request);
-    });
-    e.respondWith(source);
+    // if (e.request.url.includes('bootstrap'))
+    //     return e.respondWith(caches.match(e.request));
+    // const source = caches.open(STATIC).then(cache => {
+    //     fetch(e.request).then(res => {
+    //         cache.put(e.request, res);
+    //     })
+    //     return cache.match(e.request);
+    // });
+    // e.respondWith(source);
 
-    
+
+    // 5) Cache and network race
+    const source = new Promise((resolve, reject) => {
+        let rejected = false;
+        const failsOnce = () => {
+            if (rejected) {
+                if (/\.(png|jpg)/i.test(e.request.url)) {
+                    resolve(caches.match('/images/not-found.png'));
+                } else {
+                    throw Error('SourceNotFound');
+                }
+            } else {
+                rejected = true;
+            }
+        }
+        fetch(e.request)
+            .then(res => {
+                res.ok ? resolve(res) : failsOnce();
+            })
+            .catch(failsOnce());
+        caches
+            .match(e.request.url)
+            .then(cacheRes => {
+                cacheRes.ok ? resolve(cacheRes) : failsOnce();
+            })
+            .catch(failsOnce);
+        e.respondWith(source);
+    });
+
+
     // console.log(e.request);
     // if (e.request.url.includes("car1.jpg")) {
     //     e.respondWith(fetch("img/car2.jpg"));
