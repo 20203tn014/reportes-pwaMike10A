@@ -12,6 +12,8 @@ const APP_SHELL = [
     'css/styles.css',
     'img/car1.jpg',
     'js/app.js',
+    'pages/offline.html',
+    'pages/pages2.html',
 ];
 
 // Todos aquellos recursos que nunca cambian
@@ -88,15 +90,10 @@ self.addEventListener("fetch", (e) => {
     const source = new Promise((resolve, reject) => {
         let rejected = false;
         const failsOnce = () => {
-            if (rejected) {
-                if (/\.(png|jpg)/i.test(e.request.url)) {
-                    resolve(caches.match('/images/not-found.png'));
-                } else {
-                    throw Error('SourceNotFound');
-                }
-            } else {
-                rejected = true;
+            if (e.request.url.includes("pages/pages2.html")) {
+                e.respondWith(fetch("pages/offline.html"));
             }
+            else e.respondWith(fetch(e.request));
         }
         fetch(e.request)
             .then(res => {
@@ -112,10 +109,9 @@ self.addEventListener("fetch", (e) => {
         e.respondWith(source);
     });
 
-
-    // console.log(e.request);
-    // if (e.request.url.includes("car1.jpg")) {
-    //     e.respondWith(fetch("img/car2.jpg"));
+    //console.log(e.request);
+    // if (e.request.url.includes("pages/pages2.html")) {
+    //     e.respondWith(fetch("pages/offline.html"));
     // }
     // else e.respondWith(fetch(e.request));
 });
