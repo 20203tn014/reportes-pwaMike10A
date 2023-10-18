@@ -7,13 +7,13 @@ const DYNAMIC_LIMIT = 30;
 
 // Todos aquellos recursos propios de la aplicación
 const APP_SHELL = [
-  "/",
-  "index.html",
-  "css/styles.css",
-  "img/car1.jpg",
-  "js/app.js",
-  "pages/offline.html",
-  "pages/page2.html",
+  "./",
+  "./index.html",
+  "./css/styles.css",
+  "./img/car1.jpg",
+  "./js/app.js",
+  "./pages/offline.html",
+  "./pages/page2.html",
 ];
 
 // Todos aquellos recursos que nunca cambian
@@ -67,7 +67,7 @@ self.addEventListener("fetch", (e) => {
     .catch(() => {
       let regex = /\/pages/g;
       if (regex.test(e.request.url)) {
-        return caches.match("/pages/offline.html");
+        return caches.match("./pages/offline.html");
       } else {
         return caches.match(e.request);
       }
